@@ -22,6 +22,7 @@ public class Member extends BaseEntity {
     private String name;
 
     @Column(name = "member_grade", nullable = false)
+    @Enumerated(EnumType.STRING)
     private MemberGrade grade;
 
     public boolean isAdmin(Member member) {
