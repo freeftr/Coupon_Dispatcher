@@ -41,4 +41,13 @@ public class CouponController {
         couponMemberService.allocateCoupon(couponId, memberId);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/issued/{couponMemberId}")
+    public ResponseEntity<Void> updateCouponMember(
+            @PathVariable(name = "couponMemberId") Long couponMemberId,
+            @RequestParam(name = "memberId") Long memberId
+    ) {
+        couponMemberService.useCoupon(couponMemberId, memberId);
+        return ResponseEntity.noContent().build();
+    }
 }

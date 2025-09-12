@@ -1,6 +1,8 @@
 package com.freeftr.coupon.coupon.domain;
 
 import com.freeftr.coupon.common.entity.BaseEntity;
+import com.freeftr.coupon.common.exception.BadRequestException;
+import com.freeftr.coupon.common.exception.ErrorCode;
 import com.freeftr.coupon.coupon.domain.enums.CouponMemberStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -28,11 +30,21 @@ public class CouponMember extends BaseEntity {
     @Column(name = "status", nullable = false)
     private CouponMemberStatus status;
 
+    public boolean isAuthor(Long memberId) {
+        return this.memberId.equals(memberId);
+    }
+
+    public void useCoupon() {
+        if (this.status == CouponMemberStatus.USED) {
+            throw new BadRequestException(ErrorCode.COUPON_ALREADY_USED);
+        }
+        this.status = CouponMemberStatus.USED;
+    }
+
     @Builder
     public CouponMember(
             Long couponId,
-            Long memberId,
-            CouponMemberStatus status
+            Long memberId
     ) {
         this.couponId = couponId;
         this.memberId = memberId;
