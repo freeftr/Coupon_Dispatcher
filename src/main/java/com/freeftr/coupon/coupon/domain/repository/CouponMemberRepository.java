@@ -1,0 +1,16 @@
+package com.freeftr.coupon.coupon.domain.repository;
+
+import com.freeftr.coupon.coupon.domain.CouponMember;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+
+@Repository
+@RequiredArgsConstructor
+public class CouponMemberRepository {
+
+    private final CouponMemberJpaRepository couponMemberJpaRepository;
+
+    public void save(CouponMember couponMember) {
+        couponMemberJpaRepository.save(couponMember);
+    }
+}
