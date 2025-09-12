@@ -28,6 +28,7 @@ public class CouponService {
         Coupon coupon = Coupon.builder()
                 .type(request.type())
                 .validityPeriod(request.validityPeriod())
+                .quantity(request.quantity())
                 .build();
 
         return couponRepository.saveCoupon(coupon).getId();

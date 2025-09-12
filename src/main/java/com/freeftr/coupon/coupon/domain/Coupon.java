@@ -27,6 +27,9 @@ public class Coupon extends BaseEntity {
     @Column(name = "validity_period", nullable = false)
     private LocalDateTime validityPeriod;
 
+    @Column(name = "quantity", nullable = false)
+    private Integer quantity;
+
     public void updatePeriod (LocalDateTime period) {
         this.validityPeriod = period;
     }
@@ -34,9 +37,11 @@ public class Coupon extends BaseEntity {
     @Builder
     public Coupon (
             CouponType type,
-            LocalDateTime validityPeriod
+            LocalDateTime validityPeriod,
+            Integer quantity
     ) {
         this.type = type;
         this.validityPeriod = validityPeriod;
+        this.quantity = quantity;
     }
 }
