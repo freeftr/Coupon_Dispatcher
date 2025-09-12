@@ -56,6 +56,7 @@ public class CouponMemberService {
         validateAuthor(memberId, couponMember);
 
         couponMember.useCoupon();
+        //TODO: 필요하다면 동시성 처리
     }
 
     private void validateIssueResult(int result) {
