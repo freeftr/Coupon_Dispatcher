@@ -6,12 +6,16 @@ import com.freeftr.coupon.coupon.domain.Coupon;
 import com.freeftr.coupon.coupon.domain.CouponMember;
 import com.freeftr.coupon.coupon.domain.repository.CouponMemberRepository;
 import com.freeftr.coupon.coupon.domain.repository.CouponRepository;
-import com.freeftr.coupon.couponhistory.domain.repository.CouponHistoryRepository;
+import com.freeftr.coupon.coupon.dto.event.CouponHistoryEvent;
+import com.freeftr.coupon.couponhistory.domain.enums.HistoryType;
 import com.freeftr.coupon.member.domain.Member;
 import com.freeftr.coupon.member.domain.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -19,11 +23,11 @@ public class CouponMemberService {
 
     private final CouponMemberRepository couponMemberRepository;
     private final RedisService redisService;
-    private final CouponHistoryRepository couponHistoryRepository;
     private final MemberRepository memberRepository;
     private final CouponRepository couponRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-    public void allocateCoupon(Long couponId, Long memberId) {
+    public void issueCoupon(Long couponId, Long memberId) {
         // 멤버 존재 검증
         Member member = getMember(memberId);
 
@@ -44,8 +48,15 @@ public class CouponMemberService {
                 .memberId(memberId)
                 .build();
 
-        couponMemberRepository.save(couponMember);
+        Long couponMemberId = couponMemberRepository.save(couponMember).getId();
 
+        applicationEventPublisher.publishEvent(
+                new CouponHistoryEvent(
+                        couponMemberId,
+                        HistoryType.ISSUED,
+                        LocalDateTime.now()
+                )
+        );
         //TODO: 발급이력기록 비동기? 메시지 큐로 던져서 컨슈머에서 영속화
     }
 
@@ -56,6 +67,14 @@ public class CouponMemberService {
         validateAuthor(memberId, couponMember);
 
         couponMember.useCoupon();
+
+        applicationEventPublisher.publishEvent(
+                new CouponHistoryEvent(
+                        couponMemberId,
+                        HistoryType.USED,
+                        LocalDateTime.now()
+                )
+        );
         //TODO: 필요하다면 동시성 처리
     }
 
