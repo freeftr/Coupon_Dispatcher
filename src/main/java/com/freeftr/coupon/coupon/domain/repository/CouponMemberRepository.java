@@ -13,4 +13,8 @@ public class CouponMemberRepository {
     public void save(CouponMember couponMember) {
         couponMemberJpaRepository.save(couponMember);
     }
+
+    public int count(Long couponId) {
+        return couponMemberJpaRepository.countByCouponId(couponId);
+    }
 }

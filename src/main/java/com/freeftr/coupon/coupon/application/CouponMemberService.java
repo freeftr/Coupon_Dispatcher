@@ -26,7 +26,16 @@ public class CouponMemberService {
         Coupon coupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new BadRequestException(ErrorCode.COUPON_NOT_FOUND));
 
+        //TODO: 이미 발급받은 쿠폰인지 검증
+
         //TODO: Redis 카운터 확인 or DB에서 카운트 집계
+
+        // 쿠폰 발급 한도 조회
+        int issued = couponMemberRepository.count(couponId);
+
+        if (!coupon.checkQuantity(issued)) {
+            throw new BadRequestException(ErrorCode.COUPON_SOLD_OUT);
+        }
 
         CouponMember couponMember = CouponMember.builder()
                 .couponId(couponId)
