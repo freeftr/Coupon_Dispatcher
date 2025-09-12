@@ -10,6 +10,8 @@ public enum ErrorCode {
     COUPON_ALREADY_USED(1001, "이미 사용한 쿠폰입니다."),
     COUPON_ALREADY_ISSUED(1002, "이미 발급된 쿠폰입니다."),
     COUPON_SOLD_OUT(1003, "이미 품절된 쿠폰입니다."),
+    COUPON_MEMBER_NOT_FOUND(1004, "발급받은 적이 없는 쿠폰입니다."),
+    NOT_AN_COUPON_AUTHOR(1005, "쿠폰 주인이 아닙니다."),
 
     NOT_AN_ADMIN(2000, "관리자가 아닙니다."),
 

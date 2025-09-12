@@ -4,6 +4,8 @@ import com.freeftr.coupon.coupon.domain.CouponMember;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 @RequiredArgsConstructor
 public class CouponMemberRepository {
@@ -14,11 +16,11 @@ public class CouponMemberRepository {
         couponMemberJpaRepository.save(couponMember);
     }
 
-    public int count(Long couponId) {
-        return couponMemberJpaRepository.countByCouponId(couponId);
+    public Optional<CouponMember> findByCouponIdAndMemberId(Long couponId, Long memberId) {
+        return couponMemberJpaRepository.findByCouponIdAndMemberId(couponId, memberId);
     }
 
-    public boolean existsByCouponIdAndMemberId(Long couponId, Long memberId) {
-        return couponMemberJpaRepository.existsByCouponIdAndMemberId(couponId, memberId);
+    public Optional<CouponMember> findById(Long couponMemberId) {
+        return couponMemberJpaRepository.findById(couponMemberId);
     }
 }
