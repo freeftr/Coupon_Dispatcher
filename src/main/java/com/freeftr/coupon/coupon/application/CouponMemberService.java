@@ -31,7 +31,6 @@ public class CouponMemberService {
         Coupon coupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new BadRequestException(ErrorCode.COUPON_NOT_FOUND));
 
-
         /*
         Lua Script 통해 쿠폰 발급
         - 발급 한도 검증
