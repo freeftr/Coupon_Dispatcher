@@ -1,5 +1,6 @@
 package com.freeftr.coupon.coupon.presentation;
 
+import com.freeftr.coupon.coupon.application.CouponMemberService;
 import com.freeftr.coupon.coupon.application.CouponService;
 import com.freeftr.coupon.coupon.dto.request.CouponCreateRequest;
 import com.freeftr.coupon.coupon.dto.request.PeriodUpdateRequest;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 public class CouponController {
 
     private final CouponService couponService;
+    private final CouponMemberService couponMemberService;
 
     @PostMapping
     public ResponseEntity<Long> createCoupon(
@@ -28,6 +30,15 @@ public class CouponController {
             @RequestParam(name = "memberId") Long memberId
     ) {
         couponService.updatePeriod(request, memberId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{couponId}")
+    public ResponseEntity<Void> issueCoupon(
+            @PathVariable(name = "couponId") Long couponId,
+            @RequestParam(name = "memberId") Long memberId
+    ) {
+        couponMemberService.allocateCoupon(couponId, memberId);
         return ResponseEntity.noContent().build();
     }
 }
