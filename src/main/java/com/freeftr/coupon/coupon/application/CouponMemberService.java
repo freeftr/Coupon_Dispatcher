@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 public class CouponMemberService {
 
     private final CouponMemberRepository couponMemberRepository;
+    private final RedisService redisService;
     private final CouponHistoryRepository couponHistoryRepository;
     private final MemberRepository memberRepository;
     private final CouponRepository couponRepository;
@@ -30,17 +31,15 @@ public class CouponMemberService {
         Coupon coupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new BadRequestException(ErrorCode.COUPON_NOT_FOUND));
 
-        // 중복 발급 검증
-        checkIssued(couponId, memberId);
 
-        //TODO: Redis 카운터 확인
+        /*
+        Lua Script 통해 쿠폰 발급
+        - 발급 한도 검증
+        - 중복 발급 검증
+        */
+        int result = redisService.issueCoupon(couponId, memberId, coupon.getQuantity());
 
-        // 쿠폰 발급 한도 조회
-        int issued = couponMemberRepository.count(couponId);
-
-        if (!coupon.checkQuantity(issued)) {
-            throw new BadRequestException(ErrorCode.COUPON_SOLD_OUT);
-        }
+        validateIssueResult(result);
 
         CouponMember couponMember = CouponMember.builder()
                 .couponId(couponId)
@@ -52,9 +51,14 @@ public class CouponMemberService {
         //TODO: 발급이력기록 비동기? 메시지 큐로 던져서 컨슈머에서 영속화
     }
 
-    private void checkIssued(Long couponId, Long memberId) {
-        if (couponMemberRepository.existsByCouponIdAndMemberId(couponId, memberId)) {
-            throw new BadRequestException(ErrorCode.COUPON_ALREADY_ISSUED);
+    private void validateIssueResult(int result) {
+        switch (result) {
+            case 0:
+                return;
+            case 1:
+                throw new BadRequestException(ErrorCode.COUPON_SOLD_OUT);
+            case 2:
+                throw new BadRequestException(ErrorCode.COUPON_ALREADY_ISSUED);
         }
     }
 }
