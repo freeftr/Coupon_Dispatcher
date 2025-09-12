@@ -8,9 +8,11 @@ import org.springframework.data.repository.query.Param;
 public interface CouponMemberJpaRepository extends JpaRepository<CouponMember, Long> {
 
     @Query("""
-    SELECT COUNT(c)
-    FROM Coupon c
-    WHERE c.couponId = :couponId
+    SELECT COUNT(cm)
+    FROM CouponMember cm
+    WHERE cm.couponId = :couponId
     """)
-    int countByCouponId(@Param("couponId") Long couponId);
+    int countByCouponId(Long couponId);
+
+	boolean existsByCouponIdAndMemberId(Long couponId, Long memberId);
 }

@@ -4,6 +4,6 @@ import java.time.LocalDateTime;
 
 public record PeriodUpdateRequest(
         Long couponId,
-        LocalDateTime newPeriod
+        Integer newPeriod
 ) {
 }

@@ -17,4 +17,8 @@ public class CouponMemberRepository {
     public int count(Long couponId) {
         return couponMemberJpaRepository.countByCouponId(couponId);
     }
+
+    public boolean existsByCouponIdAndMemberId(Long couponId, Long memberId) {
+        return couponMemberJpaRepository.existsByCouponIdAndMemberId(couponId, memberId);
+    }
 }

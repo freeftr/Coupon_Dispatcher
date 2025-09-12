@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 public record CouponCreateRequest(
         CouponType type,
-        LocalDateTime validityPeriod,
+        Integer validityPeriod,
         Integer quantity
 ) {
 }

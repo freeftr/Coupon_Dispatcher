@@ -19,16 +19,16 @@ public class CouponMemberService {
     private final MemberRepository memberRepository;
     private final CouponRepository couponRepository;
 
-    public void allocateCoupon(Long memberId, Long couponId) {
+    public void allocateCoupon(Long couponId, Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BadRequestException(ErrorCode.MEMBER_NOT_FOUND));
 
         Coupon coupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new BadRequestException(ErrorCode.COUPON_NOT_FOUND));
 
-        //TODO: 이미 발급받은 쿠폰인지 검증
+        checkIssued(couponId, memberId);
 
-        //TODO: Redis 카운터 확인 or DB에서 카운트 집계
+        //TODO: Redis 카운터 확인
 
         // 쿠폰 발급 한도 조회
         int issued = couponMemberRepository.count(couponId);
@@ -45,5 +45,11 @@ public class CouponMemberService {
         couponMemberRepository.save(couponMember);
 
         //TODO: 발급이력기록 비동기? 메시지 큐로 던져서 컨슘으로 영속화
+    }
+
+    private void checkIssued(Long couponId, Long memberId) {
+        if (couponMemberRepository.existsByCouponIdAndMemberId(couponId, memberId)) {
+            throw new BadRequestException(ErrorCode.COUPON_ALREADY_ISSUED);
+        }
     }
 }
