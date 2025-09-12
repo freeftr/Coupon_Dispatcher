@@ -12,8 +12,8 @@ public class CouponMemberRepository {
 
     private final CouponMemberJpaRepository couponMemberJpaRepository;
 
-    public void save(CouponMember couponMember) {
-        couponMemberJpaRepository.save(couponMember);
+    public CouponMember save(CouponMember couponMember) {
+        return couponMemberJpaRepository.save(couponMember);
     }
 
     public Optional<CouponMember> findByCouponIdAndMemberId(Long couponId, Long memberId) {

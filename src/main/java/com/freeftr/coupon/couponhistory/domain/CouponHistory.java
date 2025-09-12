@@ -14,6 +14,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -31,12 +33,17 @@ public class CouponHistory extends BaseEntity {
 	@Column(name = "history_type", nullable = false)
 	private HistoryType type;
 
+	@Column(name = "issued_date", nullable = false)
+	private LocalDateTime issuedDate;
+
 	@Builder
 	public CouponHistory(
 			Long couponMemberId,
-			HistoryType type
+			HistoryType type,
+			LocalDateTime issuedDate
 	) {
 		this.couponMemberId = couponMemberId;
 		this.type = type;
+		this.issuedDate = issuedDate;
 	}
 }

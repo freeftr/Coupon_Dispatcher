@@ -38,7 +38,7 @@ public class CouponController {
             @PathVariable(name = "couponId") Long couponId,
             @RequestParam(name = "memberId") Long memberId
     ) {
-        couponMemberService.allocateCoupon(couponId, memberId);
+        couponMemberService.issueCoupon(couponId, memberId);
         return ResponseEntity.noContent().build();
     }
 
