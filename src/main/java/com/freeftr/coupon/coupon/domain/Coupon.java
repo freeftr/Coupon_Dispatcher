@@ -34,10 +34,6 @@ public class Coupon extends BaseEntity {
         this.validityPeriod = period;
     }
 
-    public boolean checkQuantity(int issued) {
-        return this.quantity > issued;
-    }
-
     @Builder
     public Coupon (
             CouponType type,
