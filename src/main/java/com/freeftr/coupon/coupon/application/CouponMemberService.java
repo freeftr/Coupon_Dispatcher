@@ -27,7 +27,6 @@ public class CouponMemberService {
     private final CouponRepository couponRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    @Transactional
     public void issueCoupon(Long couponId, Long memberId) {
         // 멤버 존재 검증
         Member member = getMember(memberId);
