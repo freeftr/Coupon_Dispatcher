@@ -38,6 +38,9 @@ dependencies {
 	// Testcontainers
 	testImplementation 'org.testcontainers:junit-jupiter:1.20.1'
 	testImplementation 'org.testcontainers:testcontainers:1.20.1'
+
+	// Kafka
+	implementation 'org.springframework.kafka:spring-kafka'
 }
 
 tasks.named('test') {

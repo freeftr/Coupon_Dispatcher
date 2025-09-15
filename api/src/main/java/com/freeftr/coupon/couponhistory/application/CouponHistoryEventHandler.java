@@ -1,4 +1,4 @@
-package com.freeftr.coupon.coupon.application;
+package com.freeftr.coupon.couponhistory.application;
 
 import com.freeftr.coupon.coupon.dto.event.CouponHistoryEvent;
 import com.freeftr.coupon.couponhistory.domain.CouponHistory;
@@ -6,14 +6,16 @@ import com.freeftr.coupon.couponhistory.domain.repository.CouponHistoryRepositor
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 @RequiredArgsConstructor
-public class CouponEventHandler {
+public class CouponHistoryEventHandler {
 
 	private final CouponHistoryRepository couponHistoryRepository;
 
-	@EventListener
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleCouponHistory(CouponHistoryEvent event) {
 		CouponHistory couponHistory = CouponHistory.builder()
 				.type(event.type())
