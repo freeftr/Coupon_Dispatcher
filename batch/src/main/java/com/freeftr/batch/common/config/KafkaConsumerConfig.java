@@ -1,6 +1,6 @@
 package com.freeftr.batch.common.config;
 
-import lombok.RequiredArgsConstructor;
+import com.freeftr.batch.couponhistory.dto.event.CouponHistoryEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,45 +15,51 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.springframework.kafka.listener.ContainerProperties.AckMode.MANUAL_IMMEDIATE;
+import static org.springframework.kafka.listener.ContainerProperties.AckMode.BATCH;
 
 @EnableKafka
 @Configuration
-@RequiredArgsConstructor
 public class KafkaConsumerConfig {
 
-	@Value(value = "${spring.kafka.bootstrap-servers}")
+	@Value("${spring.kafka.bootstrap-servers}")
 	private String bootstrapServers;
 
-	@Value(value = "${spring.kafka.consumer.group-id}")
+	@Value("${spring.kafka.consumer.group-id}")
 	private String groupId;
 
 	@Bean
-	public ConsumerFactory<String, Object> consumerFactory() {
+	public ConsumerFactory<String, CouponHistoryEvent> consumerFactory() {
 		Map<String, Object> props = new HashMap<>();
 		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 		props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+
 		props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-		props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100);
+		props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+		props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500);
+		props.put(ConsumerConfig.FETCH_MIN_BYTES_CONFIG, 1048576);
+
 		props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
 		props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+
+		props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+		props.put(JsonDeserializer.TRUSTED_PACKAGES, "com.freeftr.batch.couponhistory.dto.event.CouponHistoryEvent");
+		props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.freeftr.batch.couponhistory.dto.event.CouponHistoryEvent");
 
 		return new DefaultKafkaConsumerFactory<>(
 				props,
 				new StringDeserializer(),
-				new JsonDeserializer<>(Object.class)
+				new JsonDeserializer<>(CouponHistoryEvent.class, false)
 		);
 	}
 
-	@Bean
-	public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory(ConsumerFactory<String, Object> consumerFactory) {
+	@Bean(name = "couponBatchListenerFactory")
+	public ConcurrentKafkaListenerContainerFactory<String, CouponHistoryEvent> kafkaListenerContainerFactory(
+			ConsumerFactory<String, CouponHistoryEvent> consumerFactory) {
 
-		ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
-
-		factory.setConsumerFactory(consumerFactory());
+		var factory = new ConcurrentKafkaListenerContainerFactory<String, CouponHistoryEvent>();
+		factory.setConsumerFactory(consumerFactory);
 		factory.setBatchListener(true);
-		factory.getContainerProperties().setAckMode(MANUAL_IMMEDIATE);
-		factory.setConcurrency(3);
+		factory.getContainerProperties().setAckMode(BATCH);
 
 		return factory;
 	}
