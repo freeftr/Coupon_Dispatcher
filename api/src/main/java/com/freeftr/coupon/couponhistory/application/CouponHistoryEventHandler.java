@@ -13,16 +13,10 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @RequiredArgsConstructor
 public class CouponHistoryEventHandler {
 
-	private final CouponHistoryRepository couponHistoryRepository;
+	private final CouponHistoryEventProducer couponHistoryEventProducer;
 
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleCouponHistory(CouponHistoryEvent event) {
-		CouponHistory couponHistory = CouponHistory.builder()
-				.type(event.type())
-				.issuedDate(event.issuedDate())
-				.couponMemberId(event.couponMemberId())
-				.build();
-
-		couponHistoryRepository.save(couponHistory);
+		couponHistoryEventProducer.send(event);
 	}
 }
