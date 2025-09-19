@@ -3,6 +3,7 @@ package com.freeftr.coupon.coupon.application;
 import com.freeftr.coupon.coupon.domain.enums.CouponType;
 import com.freeftr.coupon.coupon.dto.response.CouponResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.DefaultTypedTuple;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
@@ -18,8 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RedisService {
@@ -176,5 +177,28 @@ public class RedisService {
 		redisTemplate.opsForZSet().add(memberCouponKey, validCoupons);
 		redisTemplate.expire(memberCouponKey, 3, TimeUnit.DAYS);
 		redisTemplate.opsForValue().multiSet(couponTypes);
+	}
+
+	public void removeCouponFromCache(Long memberId, Long couponId) {
+		String memberCouponKey = String.format(KEY_MEMBER_COUPONS, memberId);
+		redisTemplate.opsForZSet().remove(memberCouponKey, String.valueOf(couponId));
+	}
+
+	public void addCouponToCache(CouponResponse couponResponse, Long memberId) {
+		String memberCouponKey = String.format(KEY_MEMBER_COUPONS, memberId);
+		String typeKey = String.format(KEY_COUPON_TYPE, couponResponse.couponId());
+
+		LocalDate today = LocalDate.now();
+		LocalDate expire = couponResponse.expireDate();
+
+		if (!expire.isAfter(today)) return;
+
+		double score = (double) expire.toEpochDay();
+
+		redisTemplate.opsForZSet().add(memberCouponKey, String.valueOf(couponResponse.couponId()), score);
+		redisTemplate.expire(memberCouponKey, 3, TimeUnit.DAYS);
+		redisTemplate.opsForValue().set(typeKey, couponResponse.couponType().toString());
+
+		log.info("cache added");
 	}
 }

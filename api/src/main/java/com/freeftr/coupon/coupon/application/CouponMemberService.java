@@ -61,6 +61,14 @@ public class CouponMemberService {
 
         Long couponMemberId = couponMemberRepository.save(couponMember).getId();
 
+        redisService.addCouponToCache(
+                new CouponResponse(
+                        couponId,
+                        coupon.getType(),
+                        couponMember.getExpireDate()),
+                memberId
+        );
+
         applicationEventPublisher.publishEvent(
                 new CouponHistoryEvent(
                         couponMemberId,
@@ -77,6 +85,8 @@ public class CouponMemberService {
         validateAuthor(memberId, couponMember);
 
         couponMember.useCoupon(LocalDate.now());
+
+        redisService.removeCouponFromCache(memberId, couponMember.getCouponId());
 
         applicationEventPublisher.publishEvent(
                 new CouponHistoryEvent(
