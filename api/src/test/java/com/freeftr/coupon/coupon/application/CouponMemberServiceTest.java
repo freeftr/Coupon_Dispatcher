@@ -69,7 +69,7 @@ class CouponMemberServiceTest {
 
 		given(memberRepository.findById(memberId)).willReturn(Optional.of(member()));
 		given(couponRepository.findById(couponId)).willReturn(Optional.of(coupon()));
-		given(redisService.issueCoupon(couponId, memberId, 5)).willReturn(1);
+		given(redisService.issueCoupon(couponId, memberId, 5)).willReturn("1");
 
 		assertThatThrownBy(() -> couponMemberService.issueCoupon(couponId, memberId))
 				.isInstanceOf(BadRequestException.class)
@@ -84,7 +84,7 @@ class CouponMemberServiceTest {
 
 		given(memberRepository.findById(memberId)).willReturn(Optional.of(member()));
 		given(couponRepository.findById(couponId)).willReturn(Optional.of(coupon()));
-		given(redisService.issueCoupon(couponId, memberId, 5)).willReturn(2);
+		given(redisService.issueCoupon(couponId, memberId, 5)).willReturn("2");
 
 		assertThatThrownBy(() -> couponMemberService.issueCoupon(couponId, memberId))
 				.isInstanceOf(BadRequestException.class)

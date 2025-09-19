@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
-public interface CouponMemberJpaRepository extends JpaRepository<CouponMember, Long> {
+public interface CouponMemberJpaRepository extends JpaRepository<CouponMember, Long>, CouponMemberRepositoryCustom {
 
 	@Query("""
 	SELECT cm

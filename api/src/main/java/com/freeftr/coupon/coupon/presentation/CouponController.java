@@ -2,11 +2,15 @@ package com.freeftr.coupon.coupon.presentation;
 
 import com.freeftr.coupon.coupon.application.CouponMemberService;
 import com.freeftr.coupon.coupon.application.CouponService;
+import com.freeftr.coupon.coupon.domain.Coupon;
 import com.freeftr.coupon.coupon.dto.request.CouponCreateRequest;
 import com.freeftr.coupon.coupon.dto.request.PeriodUpdateRequest;
+import com.freeftr.coupon.coupon.dto.response.CouponResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/coupons")
@@ -50,4 +54,12 @@ public class CouponController {
         couponMemberService.useCoupon(couponMemberId, memberId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{memberId}")
+    public ResponseEntity<List<CouponResponse>> findCoupons(
+            @PathVariable Long memberId
+    ) {
+        return ResponseEntity.ok(couponMemberService.findCouponsByMemberId(memberId));
+    }
+
 }

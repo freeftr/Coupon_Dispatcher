@@ -49,9 +49,9 @@ class RedisServiceTest {
 
 		int limit = 1;
 
-		int success = redisService.issueCoupon(couponId, member1, limit);
+		String success = redisService.issueCoupon(couponId, member1, limit);
 
-		assertThat(success).isEqualTo(0);
+		assertThat(success).isEqualTo("0");
 	}
 
 	@Test
@@ -62,10 +62,11 @@ class RedisServiceTest {
 
 		int limit = 2;
 
-		int initial = redisService.issueCoupon(couponId, member1, limit);
-		int duplicate = redisService.issueCoupon(couponId, member1, limit);
+		String initial = redisService.issueCoupon(couponId, member1, limit);
+		String duplicate = redisService.issueCoupon(couponId, member1, limit);
 
-		assertThat(duplicate).isEqualTo(2);
+		assertThat(initial).isEqualTo("0");
+		assertThat(duplicate).isEqualTo("2");
 	}
 
 	@Test
@@ -76,10 +77,11 @@ class RedisServiceTest {
 
 		int limit = 1;
 
-		int initial = redisService.issueCoupon(couponId, member1, limit);
-		int soldOut = redisService.issueCoupon(couponId, member1, limit);
+		String initial = redisService.issueCoupon(couponId, member1, limit);
+		String soldOut = redisService.issueCoupon(couponId, member1, limit);
 
-		assertThat(soldOut).isEqualTo(1);
+		assertThat(initial).isEqualTo("0");
+		assertThat(soldOut).isEqualTo("1");
 	}
 
 	@Test
@@ -92,9 +94,9 @@ class RedisServiceTest {
 		int soldOutCount = 0;
 
 		for (int i = 0; i < 10; i++) {
-			int result = redisService.issueCoupon(couponId, (long) i, limit);
-			if (result == 0) successCount++;
-			else if (result == 1) soldOutCount++;
+			String result = redisService.issueCoupon(couponId, (long) i, limit);
+			if (result.equals("0")) successCount++;
+			else if (result.equals("1")) soldOutCount++;
 		}
 
 		assertThat(successCount).isEqualTo(limit);
