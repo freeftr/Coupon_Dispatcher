@@ -12,6 +12,8 @@ public enum ErrorCode {
     COUPON_SOLD_OUT(1003, "이미 품절된 쿠폰입니다."),
     COUPON_MEMBER_NOT_FOUND(1004, "발급받은 적이 없는 쿠폰입니다."),
     NOT_AN_COUPON_AUTHOR(1005, "쿠폰 주인이 아닙니다."),
+    COUPON_EXPIRED(1006, "유효기간이 지난 쿠폰입니다."),
+    INVALID_COUPON_TYPE(1007, "유효하지 않은 쿠폰 타입입니다"),
 
     NOT_AN_ADMIN(2000, "관리자가 아닙니다."),
 

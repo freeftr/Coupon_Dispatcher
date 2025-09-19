@@ -7,16 +7,21 @@ import com.freeftr.coupon.coupon.domain.CouponMember;
 import com.freeftr.coupon.coupon.domain.repository.CouponMemberRepository;
 import com.freeftr.coupon.coupon.domain.repository.CouponRepository;
 import com.freeftr.coupon.coupon.dto.event.CouponHistoryEvent;
+import com.freeftr.coupon.coupon.dto.response.CouponResponse;
 import com.freeftr.coupon.couponhistory.domain.enums.HistoryType;
 import com.freeftr.coupon.member.domain.Member;
 import com.freeftr.coupon.member.domain.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CouponMemberService {
@@ -35,18 +40,23 @@ public class CouponMemberService {
         // 쿠폰 존재 검증
         Coupon coupon = getCoupon(couponId);
 
-        /*
+        /**
         Lua Script 통해 쿠폰 발급
         - 발급 한도 검증
         - 중복 발급 검증
-        */
-        int result = redisService.issueCoupon(couponId, memberId, coupon.getQuantity());
+        **/
+        String result = redisService.issueCoupon(
+                couponId,
+                memberId,
+                coupon.getQuantity()
+        );
 
         validateIssueResult(result);
 
         CouponMember couponMember = CouponMember.builder()
                 .couponId(couponId)
                 .memberId(memberId)
+                .expireDate(LocalDate.now().plusMonths(coupon.getValidityPeriod()))
                 .build();
 
         Long couponMemberId = couponMemberRepository.save(couponMember).getId();
@@ -58,7 +68,6 @@ public class CouponMemberService {
                         LocalDateTime.now()
                 )
         );
-        //TODO: 발급이력기록 비동기? 메시지 큐로 던져서 컨슈머에서 영속화
     }
 
     @Transactional
@@ -67,7 +76,7 @@ public class CouponMemberService {
 
         validateAuthor(memberId, couponMember);
 
-        couponMember.useCoupon();
+        couponMember.useCoupon(LocalDate.now());
 
         applicationEventPublisher.publishEvent(
                 new CouponHistoryEvent(
@@ -79,13 +88,32 @@ public class CouponMemberService {
         //TODO: 필요하다면 동시성 처리
     }
 
-    private void validateIssueResult(int result) {
+    public List<CouponResponse> findCouponsByMemberId(Long memberId) {
+        Member member = getMember(memberId);
+
+        List<CouponResponse> cache = redisService.findCouponCacheByMemberId(memberId);
+
+        // Cache hit
+        if (cache != null) {
+            log.info("cache hit");
+            return cache;
+        }
+
+        log.info("cache miss");
+
+        // Cache Miss
+        List<CouponResponse> response = couponMemberRepository.findCouponsByMemberId(memberId);
+        redisService.cacheCoupon(response, memberId);
+        return response;
+    }
+
+    private void validateIssueResult(String result) {
         switch (result) {
-            case 0:
+            case "0":
                 return;
-            case 1:
+            case "1":
                 throw new BadRequestException(ErrorCode.COUPON_SOLD_OUT);
-            case 2:
+            case "2":
                 throw new BadRequestException(ErrorCode.COUPON_ALREADY_ISSUED);
         }
     }

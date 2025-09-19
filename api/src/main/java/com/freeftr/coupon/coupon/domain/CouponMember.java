@@ -10,6 +10,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -39,24 +41,35 @@ public class CouponMember extends BaseEntity {
     @Column(name = "status", nullable = false)
     private CouponMemberStatus status;
 
+    @Column(name = "valide_date", nullable = false)
+    private LocalDate expireDate;
+
     public boolean isAuthor(Long memberId) {
         return this.memberId.equals(memberId);
     }
 
-    public void useCoupon() {
+    public void useCoupon(LocalDate now) {
         if (this.status == CouponMemberStatus.USED) {
             throw new BadRequestException(ErrorCode.COUPON_ALREADY_USED);
         }
+
+        if (this.expireDate.isBefore(now)) {
+            this.status = CouponMemberStatus.EXPIRED;
+            throw new BadRequestException(ErrorCode.COUPON_EXPIRED);
+        }
+
         this.status = CouponMemberStatus.USED;
     }
 
     @Builder
     public CouponMember(
             Long couponId,
-            Long memberId
+            Long memberId,
+            LocalDate expireDate
     ) {
         this.couponId = couponId;
         this.memberId = memberId;
         this.status = CouponMemberStatus.ISSUED;
+        this.expireDate = expireDate;
     }
 }
