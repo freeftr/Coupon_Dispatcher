@@ -1,5 +1,6 @@
 package com.freeftr.coupon.coupon.domain.repository;
 
+import com.freeftr.coupon.coupon.domain.enums.CouponMemberStatus;
 import com.freeftr.coupon.coupon.dto.response.CouponResponse;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -30,7 +31,8 @@ public class CouponMemberRepositoryCustomImpl implements CouponMemberRepositoryC
 				.from(couponMember)
 				.join(coupon).on(couponMember.couponId.eq(coupon.id))
 				.where(couponMember.memberId.eq(memberId)
-						.and(couponMember.expireDate.after(LocalDate.now())))
+						.and(couponMember.expireDate.after(LocalDate.now()))
+						.and(couponMember.status.eq(CouponMemberStatus.ISSUED)))
 				.fetch();
 	}
 }
