@@ -69,6 +69,7 @@ public class CouponMemberService {
                 memberId
         );
 
+        // 굳이 애플리케이션 나눈 이유가?? 고민해보기.
         applicationEventPublisher.publishEvent(
                 new CouponHistoryEvent(
                         couponMemberId,
@@ -143,7 +144,7 @@ public class CouponMemberService {
                 .orElseThrow(() -> new BadRequestException(ErrorCode.COUPON_MEMBER_NOT_FOUND));
     }
 
-    private static void validateAuthor(Long memberId, CouponMember couponMember) {
+    private void validateAuthor(Long memberId, CouponMember couponMember) {
         if (!couponMember.isAuthor(memberId)) {
             throw new BadRequestException(ErrorCode.NOT_AN_COUPON_AUTHOR);
         }

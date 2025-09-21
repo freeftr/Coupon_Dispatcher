@@ -33,6 +33,7 @@ public class KafkaConsumerConfig {
 		props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 		props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
 
+		//커밋을 true로 하면 자동으로 커밋을 함으로써 오프셋 증가 => 학습 필요
 		props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 		props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 		props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500);
