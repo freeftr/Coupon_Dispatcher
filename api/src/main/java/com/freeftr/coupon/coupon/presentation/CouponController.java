@@ -5,6 +5,7 @@ import com.freeftr.coupon.coupon.application.CouponService;
 import com.freeftr.coupon.coupon.domain.Coupon;
 import com.freeftr.coupon.coupon.dto.request.CouponCreateRequest;
 import com.freeftr.coupon.coupon.dto.request.PeriodUpdateRequest;
+import com.freeftr.coupon.coupon.dto.response.CouponCreateResponse;
 import com.freeftr.coupon.coupon.dto.response.CouponResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,7 @@ public class CouponController {
     private final CouponMemberService couponMemberService;
 
     @PostMapping
-    public ResponseEntity<Long> createCoupon(
+    public ResponseEntity<CouponCreateResponse> createCoupon(
             @RequestBody CouponCreateRequest request,
             @RequestParam(name = "memberId") Long memberId
     ) {
