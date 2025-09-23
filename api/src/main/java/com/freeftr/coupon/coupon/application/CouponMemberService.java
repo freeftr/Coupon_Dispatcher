@@ -69,7 +69,6 @@ public class CouponMemberService {
                 memberId
         );
 
-        // 굳이 애플리케이션 나눈 이유가?? 고민해보기.
         applicationEventPublisher.publishEvent(
                 new CouponHistoryEvent(
                         couponMemberId,

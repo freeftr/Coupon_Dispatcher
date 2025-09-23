@@ -6,6 +6,7 @@ import com.freeftr.coupon.coupon.domain.Coupon;
 import com.freeftr.coupon.coupon.domain.repository.CouponRepository;
 import com.freeftr.coupon.coupon.dto.request.CouponCreateRequest;
 import com.freeftr.coupon.coupon.dto.request.PeriodUpdateRequest;
+import com.freeftr.coupon.coupon.dto.response.CouponCreateResponse;
 import com.freeftr.coupon.member.domain.Member;
 import com.freeftr.coupon.member.domain.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ public class CouponService {
     private final CouponRepository couponRepository;
     private final MemberRepository memberRepository;
 
-    public Long createCoupon(CouponCreateRequest request, Long memberId) {
+    public CouponCreateResponse createCoupon(CouponCreateRequest request, Long memberId) {
 
         Member member = getMember(memberId);
 
@@ -31,7 +32,7 @@ public class CouponService {
                 .quantity(request.quantity())
                 .build();
 
-        return couponRepository.saveCoupon(coupon).getId();
+        return new CouponCreateResponse(couponRepository.saveCoupon(coupon).getId());
     }
 
     @Transactional
