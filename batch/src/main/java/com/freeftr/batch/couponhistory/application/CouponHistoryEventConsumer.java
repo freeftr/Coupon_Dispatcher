@@ -18,7 +18,6 @@ public class CouponHistoryEventConsumer {
 
 	@KafkaListener(
 			topics = "${app.topics.coupon}",
-			properties = "max.poll.records.100",
 			containerFactory = "couponBatchListenerFactory"
 	)
 	@Transactional
