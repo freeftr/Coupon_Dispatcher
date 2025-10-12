@@ -143,7 +143,7 @@ public class CouponMemberService {
                 .orElseThrow(() -> new BadRequestException(ErrorCode.COUPON_MEMBER_NOT_FOUND));
     }
 
-    private static void validateAuthor(Long memberId, CouponMember couponMember) {
+    private void validateAuthor(Long memberId, CouponMember couponMember) {
         if (!couponMember.isAuthor(memberId)) {
             throw new BadRequestException(ErrorCode.NOT_AN_COUPON_AUTHOR);
         }
