@@ -26,7 +26,7 @@ public class KafkaConsumerConfig {
 
 	@Value("${spring.kafka.consumer.group-id}")
 	private String groupId;
-
+asdasd
 	@Bean
 	public ConsumerFactory<String, CouponHistoryEvent> consumerFactory() {
 		Map<String, Object> props = new HashMap<>();
