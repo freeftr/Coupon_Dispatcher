@@ -4,6 +4,7 @@ import com.freeftr.coupon.common.exception.BadRequestException;
 import com.freeftr.coupon.common.exception.ErrorCode;
 import com.freeftr.coupon.coupon.domain.Coupon;
 import com.freeftr.coupon.coupon.domain.CouponMember;
+import com.freeftr.coupon.coupon.domain.enums.CouponIssueResult;
 import com.freeftr.coupon.coupon.domain.repository.CouponMemberRepository;
 import com.freeftr.coupon.coupon.domain.repository.CouponRepository;
 import com.freeftr.coupon.coupon.dto.event.CouponHistoryEvent;
@@ -16,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,24 +37,27 @@ public class CouponMemberService {
 
     @Transactional
     public void issueCoupon(Long couponId, Long memberId) {
-        // 멤버 존재 검증
         Member member = getMember(memberId);
-
-        // 쿠폰 존재 검증
         Coupon coupon = getCoupon(couponId);
 
-        /**
-        Lua Script 통해 쿠폰 발급
-        - 발급 한도 검증
-        - 중복 발급 검증
-        **/
-        String result = redisService.issueCoupon(
+        CouponIssueResult issueResult = redisService.issueCoupon(
                 couponId,
                 memberId,
                 coupon.getQuantity()
         );
 
-        validateIssueResult(result);
+        validateIssueResult(issueResult);
+
+        // DB 롤백 시 Redis 보상 트랜잭션 등록
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                if (status == TransactionSynchronization.STATUS_ROLLED_BACK) {
+                    redisService.rollbackIssueCoupon(couponId, memberId);
+                    redisService.removeCouponFromCache(memberId, couponId);
+                }
+            }
+        });
 
         CouponMember couponMember = CouponMember.builder()
                 .couponId(couponId)
@@ -99,11 +105,10 @@ public class CouponMemberService {
     }
 
     public List<CouponResponse> findCouponsByMemberId(Long memberId) {
-        Member member = getMember(memberId);
+        getMember(memberId);
 
         List<CouponResponse> cache = redisService.findCouponCacheByMemberId(memberId);
 
-        // Cache hit
         if (cache != null) {
             log.info("cache hit");
             return cache;
@@ -111,19 +116,40 @@ public class CouponMemberService {
 
         log.info("cache miss");
 
-        // Cache Miss
-        List<CouponResponse> response = couponMemberRepository.findCouponsByMemberId(memberId);
-        redisService.cacheCoupon(response, memberId);
-        return response;
+        String lockKey = "member:" + memberId + ":coupons";
+        boolean locked = redisService.tryLock(lockKey);
+
+        if (!locked) {
+            // 다른 요청이 캐시를 채우는 중이므로 잠시 후 재조회
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            cache = redisService.findCouponCacheByMemberId(memberId);
+            if (cache != null) {
+                return cache;
+            }
+        }
+
+        try {
+            List<CouponResponse> response = couponMemberRepository.findCouponsByMemberId(memberId);
+            redisService.cacheCoupon(response, memberId);
+            return response;
+        } finally {
+            if (locked) {
+                redisService.unlock(lockKey);
+            }
+        }
     }
 
-    private void validateIssueResult(String result) {
+    private void validateIssueResult(CouponIssueResult result) {
         switch (result) {
-            case "0":
+            case SUCCESS:
                 return;
-            case "1":
+            case SOLD_OUT:
                 throw new BadRequestException(ErrorCode.COUPON_SOLD_OUT);
-            case "2":
+            case ALREADY_ISSUED:
                 throw new BadRequestException(ErrorCode.COUPON_ALREADY_ISSUED);
         }
     }

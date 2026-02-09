@@ -4,6 +4,7 @@ import com.freeftr.coupon.common.exception.BadRequestException;
 import com.freeftr.coupon.common.exception.ErrorCode;
 import com.freeftr.coupon.coupon.domain.Coupon;
 import com.freeftr.coupon.coupon.domain.CouponMember;
+import com.freeftr.coupon.coupon.domain.enums.CouponIssueResult;
 import com.freeftr.coupon.coupon.domain.enums.CouponType;
 import com.freeftr.coupon.coupon.domain.repository.CouponMemberRepository;
 import com.freeftr.coupon.coupon.domain.repository.CouponRepository;
@@ -69,7 +70,7 @@ class CouponMemberServiceTest {
 
 		given(memberRepository.findById(memberId)).willReturn(Optional.of(member()));
 		given(couponRepository.findById(couponId)).willReturn(Optional.of(coupon()));
-		given(redisService.issueCoupon(couponId, memberId, 5)).willReturn("1");
+		given(redisService.issueCoupon(couponId, memberId, 5)).willReturn(CouponIssueResult.SOLD_OUT);
 
 		assertThatThrownBy(() -> couponMemberService.issueCoupon(couponId, memberId))
 				.isInstanceOf(BadRequestException.class)
@@ -84,7 +85,7 @@ class CouponMemberServiceTest {
 
 		given(memberRepository.findById(memberId)).willReturn(Optional.of(member()));
 		given(couponRepository.findById(couponId)).willReturn(Optional.of(coupon()));
-		given(redisService.issueCoupon(couponId, memberId, 5)).willReturn("2");
+		given(redisService.issueCoupon(couponId, memberId, 5)).willReturn(CouponIssueResult.ALREADY_ISSUED);
 
 		assertThatThrownBy(() -> couponMemberService.issueCoupon(couponId, memberId))
 				.isInstanceOf(BadRequestException.class)
