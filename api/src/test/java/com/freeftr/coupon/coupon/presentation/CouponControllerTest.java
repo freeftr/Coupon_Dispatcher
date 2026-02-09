@@ -6,6 +6,7 @@ import com.freeftr.coupon.coupon.application.CouponService;
 import com.freeftr.coupon.coupon.domain.enums.CouponType;
 import com.freeftr.coupon.coupon.dto.request.CouponCreateRequest;
 import com.freeftr.coupon.coupon.dto.request.PeriodUpdateRequest;
+import com.freeftr.coupon.coupon.dto.response.CouponCreateResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +47,7 @@ class CouponControllerTest {
 				6
 		);
 		given(couponService.createCoupon(any(CouponCreateRequest.class), anyLong()))
-				.willReturn(1L);
+				.willReturn(new CouponCreateResponse(1L));
 
 		// when & then
 		mockMvc.perform(post("/api/v1/coupons")

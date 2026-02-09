@@ -56,7 +56,7 @@ public class CouponService {
     }
 
     private void checkAdmin(Member member) {
-        if (!member.isAdmin(member)) {
+        if (!member.isAdmin()) {
             throw new BadRequestException(ErrorCode.NOT_AN_ADMIN);
         }
     }

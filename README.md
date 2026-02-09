@@ -91,8 +91,113 @@ return 0
 - Redis 도입 비용: 500만원
 - 쿠폰 수량: 1000개
 
-선착순 1000명만 받아야 할 쿠폰이 동시성 제어가 되지 않아 1050명이 받아버렸다. 그럼 기존 예산인 500만원(5000 * 1000)에서 
+선착순 1000명만 받아야 할 쿠폰이 동시성 제어가 되지 않아 1050명이 받아버렸다. 그럼 기존 예산인 500만원(5000 * 1000)에서
 525만원(5000*1050)으로 25만이 초과하게 된다. 근데 oversell을 막기 위해 Redis를 도입하면 500만원이라는 금액을 25만원을 줄이기 위해 사용해야 한다.
 
 배보다 배꼽이 더 큰 상황이다. 이런 경우, 차라리 50명에게 쿠폰을 더 발급해주던가 비용이 저렴한 다른 솔루션을 찾아볼 필요가 있다. 결국, 무작정
 솔루션을 도입하는 것보다는 다양한 점들을 고려해서 합리적인 선택을 해볼 필요가 있다.
+
+---
+
+## 대기열(Queue) 시스템
+
+### 왜 대기열이 필요한가
+
+선착순 쿠폰 발급에서 수만 명의 사용자가 동시에 요청을 보내면, Redis Lua Script로 원자성은 보장되지만 API 서버에 순간적으로 과도한 부하가 집중된다.
+대기열을 도입하면 사용자를 순서대로 줄 세우고, 서버가 감당할 수 있는 속도(초당 10명)로 처리량을 조절할 수 있다.
+
+### 아키텍처
+
+```
+[사용자] → POST   /coupons/{id}/queue           (대기열 진입)
+         → GET    /coupons/{id}/queue/position   (순번 조회)
+         → GET    /coupons/{id}/queue/result     (발급 결과 조회)
+
+[스케줄러] → 1초마다 대기열에서 10명씩 pop
+           → 기존 issueCoupon() 호출
+           → 결과를 Redis에 저장 (TTL 5분)
+
+[관리자] → POST   /coupons/{id}/queue/activate   (대기열 활성화)
+         → POST   /coupons/{id}/queue/deactivate  (대기열 비활성화)
+```
+
+### Redis 키 설계
+
+| 키 패턴 | 타입 | 용도 | TTL |
+|---------|------|------|-----|
+| `coupon:{id}:queue` | ZSET (score=timestamp) | 대기열 | 없음 (처리 시 pop) |
+| `coupon:{id}:queue:result:{memberId}` | STRING | 발급 결과 | 5분 |
+| `queue:active:coupons` | SET | 활성 대기열 목록 | 없음 |
+
+### 대기열 진입 (Lua Script)
+
+대기열 진입 시 **활성 여부 확인 → 중복 진입 방지 → ZADD**를 하나의 Lua Script로 원자적으로 처리한다.
+~~~lua
+local activeSet = KEYS[1]
+local queue = KEYS[2]
+local couponId = ARGV[1]
+local memberId = ARGV[2]
+local timestamp = tonumber(ARGV[3])
+
+-- 대기열 비활성 상태
+if redis.call('SISMEMBER', activeSet, couponId) == 0 then return -1 end
+-- 이미 대기열에 진입한 사용자
+if redis.call('ZSCORE', queue, memberId) then return -2 end
+
+redis.call('ZADD', queue, timestamp, memberId)
+return redis.call('ZRANK', queue, memberId)
+~~~
+
+### 대기열 처리 (스케줄러)
+
+```
+매 1초마다:
+  1. 활성 대기열 목록(queue:active:coupons) 조회
+  2. 각 대기열에서 ZPOPMIN으로 10명 추출
+  3. 각 멤버에 대해 issueCoupon() 호출
+     - 성공 → 결과 저장 (SUCCESS)
+     - 품절 → 해당 멤버 + 남은 전원 SOLD_OUT 처리, 대기열 비활성화
+     - 기타 실패 → 결과 저장 (FAILED)
+```
+
+### 의사결정: 왜 WebSocket이 아니라 Polling인가
+
+대기열에서 순번을 실시간으로 알려주는 방식으로 WebSocket과 Polling 두 가지를 고민했다.
+
+**WebSocket을 선택하지 않은 이유:**
+
+1. **커넥션 비용**: 선착순 쿠폰 이벤트에 수만~수십만 명이 동시 접속하면, 각 사용자마다 TCP 커넥션을 유지해야 한다. 서버 하나당 유지할 수 있는 소켓 수에는 물리적 한계(파일 디스크립터, 메모리)가 있으므로, 이 규모의 커넥션을 감당하려면 별도의 WebSocket 서버 클러스터가 필요하다.
+2. **인프라 복잡도**: WebSocket 서버를 별도로 두면 로드밸런서 설정(sticky session), 세션 관리, 헬스체크, 재연결 로직 등 운영 부담이 크게 늘어난다.
+3. **비용 대비 효과**: 사용자가 대기열에서 기다리는 시간은 보통 수십 초~수 분이다. 이 짧은 시간 동안 실시간 푸시가 필요한지 의문이다. 2~3초 간격의 폴링으로도 사용자 경험에 큰 차이가 없다.
+
+**Polling이 적합한 이유:**
+
+1. **단순함**: 별도의 인프라 없이 기존 REST API 서버에서 처리 가능하다. 클라이언트는 `GET /queue/position`을 주기적으로 호출하면 된다.
+2. **스케일 아웃 용이**: stateless한 HTTP 요청이므로 서버를 수평 확장하기 쉽다. 어떤 서버가 응답해도 Redis에서 동일한 결과를 반환한다.
+3. **부하 예측 가능**: 폴링 간격을 클라이언트가 조절하므로 서버 입장에서 부하를 예측하기 쉽다. 응답에 `estimatedWaitSeconds`를 포함해 클라이언트가 폴링 간격을 동적으로 조절할 수 있도록 했다.
+4. **장애 격리**: 폴링 요청이 실패해도 다음 요청에서 복구된다. WebSocket은 연결이 끊기면 재연결 로직이 필요하고, 그 사이에 상태를 놓칠 수 있다.
+
+결론적으로, 이 시스템의 특성(단기간 대량 트래픽, 짧은 대기 시간)에서는 WebSocket의 실시간성보다 Polling의 단순함과 확장성이 더 큰 이점을 제공한다.
+
+### 분산 트랜잭션 보상
+
+쿠폰 발급 시 Redis에 먼저 발급 정보를 기록하고, 이후 DB에 영속화한다. 만약 DB 저장이 실패(롤백)되면 Redis에는 이미 기록된 상태이므로 데이터 불일치가 발생한다.
+이를 방지하기 위해 `TransactionSynchronization`을 등록하여, DB 트랜잭션이 롤백되면 Redis에서 발급 정보를 자동으로 되돌리는 보상 로직을 추가했다.
+
+~~~java
+TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+    @Override
+    public void afterCompletion(int status) {
+        if (status == STATUS_ROLLED_BACK) {
+            redisService.rollbackIssueCoupon(couponId, memberId);
+        }
+    }
+});
+~~~
+
+롤백 역시 Lua Script로 원자적으로 수행한다 (SREM + DECR).
+
+### 캐시 스탬피드 방지
+
+캐시 키가 만료되는 순간 동시에 수백 요청이 들어오면 전부 캐시 미스가 발생해 동일한 DB 쿼리가 한꺼번에 몰린다(Thundering Herd).
+이를 방지하기 위해 분산 락(`SETNX` + TTL)을 적용하여, 캐시 미스 시 하나의 요청만 DB를 조회하고 나머지는 캐시가 채워질 때까지 대기하도록 했다.

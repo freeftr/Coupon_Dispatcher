@@ -1,5 +1,6 @@
 package com.freeftr.coupon.coupon.application;
 
+import com.freeftr.coupon.coupon.domain.enums.CouponIssueResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,7 @@ class RedisServiceTest {
 	RedisService redisService;
 
 	@Autowired
-	RedisTemplate redisTemplate;
+	RedisTemplate<String, String> redisTemplate;
 
 	@BeforeEach
 	void clean() {
@@ -49,9 +50,9 @@ class RedisServiceTest {
 
 		int limit = 1;
 
-		String success = redisService.issueCoupon(couponId, member1, limit);
+		CouponIssueResult success = redisService.issueCoupon(couponId, member1, limit);
 
-		assertThat(success).isEqualTo("0");
+		assertThat(success).isEqualTo(CouponIssueResult.SUCCESS);
 	}
 
 	@Test
@@ -62,11 +63,11 @@ class RedisServiceTest {
 
 		int limit = 2;
 
-		String initial = redisService.issueCoupon(couponId, member1, limit);
-		String duplicate = redisService.issueCoupon(couponId, member1, limit);
+		CouponIssueResult initial = redisService.issueCoupon(couponId, member1, limit);
+		CouponIssueResult duplicate = redisService.issueCoupon(couponId, member1, limit);
 
-		assertThat(initial).isEqualTo("0");
-		assertThat(duplicate).isEqualTo("2");
+		assertThat(initial).isEqualTo(CouponIssueResult.SUCCESS);
+		assertThat(duplicate).isEqualTo(CouponIssueResult.ALREADY_ISSUED);
 	}
 
 	@Test
@@ -74,14 +75,15 @@ class RedisServiceTest {
 	void can_not_issue_sold_out_coupon() {
 		Long couponId = 1L;
 		Long member1 = 100L;
+		Long member2 = 200L;
 
 		int limit = 1;
 
-		String initial = redisService.issueCoupon(couponId, member1, limit);
-		String soldOut = redisService.issueCoupon(couponId, member1, limit);
+		CouponIssueResult initial = redisService.issueCoupon(couponId, member1, limit);
+		CouponIssueResult soldOut = redisService.issueCoupon(couponId, member2, limit);
 
-		assertThat(initial).isEqualTo("0");
-		assertThat(soldOut).isEqualTo("1");
+		assertThat(initial).isEqualTo(CouponIssueResult.SUCCESS);
+		assertThat(soldOut).isEqualTo(CouponIssueResult.SOLD_OUT);
 	}
 
 	@Test
@@ -94,12 +96,26 @@ class RedisServiceTest {
 		int soldOutCount = 0;
 
 		for (int i = 0; i < 10; i++) {
-			String result = redisService.issueCoupon(couponId, (long) i, limit);
-			if (result.equals("0")) successCount++;
-			else if (result.equals("1")) soldOutCount++;
+			CouponIssueResult result = redisService.issueCoupon(couponId, (long) i, limit);
+			if (result == CouponIssueResult.SUCCESS) successCount++;
+			else if (result == CouponIssueResult.SOLD_OUT) soldOutCount++;
 		}
 
 		assertThat(successCount).isEqualTo(limit);
 		assertThat(soldOutCount).isEqualTo(10 - limit);
+	}
+
+	@Test
+	@DisplayName("롤백 시 Redis에서 발급 정보가 제거된다.")
+	void rollback_issue_coupon() {
+		Long couponId = 1L;
+		Long memberId = 100L;
+		int limit = 5;
+
+		redisService.issueCoupon(couponId, memberId, limit);
+		redisService.rollbackIssueCoupon(couponId, memberId);
+
+		CouponIssueResult retryResult = redisService.issueCoupon(couponId, memberId, limit);
+		assertThat(retryResult).isEqualTo(CouponIssueResult.SUCCESS);
 	}
 }

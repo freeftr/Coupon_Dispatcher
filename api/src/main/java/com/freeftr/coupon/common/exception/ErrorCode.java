@@ -17,7 +17,13 @@ public enum ErrorCode {
 
     NOT_AN_ADMIN(2000, "관리자가 아닙니다."),
 
-    MEMBER_NOT_FOUND(3000, "존재하지 않는 사용자입니다.")
+    MEMBER_NOT_FOUND(3000, "존재하지 않는 사용자입니다."),
+
+    QUEUE_NOT_ACTIVE(4000, "대기열이 활성화되지 않은 쿠폰입니다."),
+    QUEUE_ALREADY_ENTERED(4001, "이미 대기열에 진입한 사용자입니다."),
+    QUEUE_NOT_FOUND(4002, "대기열에서 사용자를 찾을 수 없습니다."),
+    QUEUE_RESULT_NOT_FOUND(4003, "발급 결과를 찾을 수 없습니다."),
+    QUEUE_ALREADY_ACTIVE(4004, "이미 활성화된 대기열입니다.")
     ;
 
     private final int code;

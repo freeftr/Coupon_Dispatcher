@@ -41,7 +41,7 @@ public class CouponMember extends BaseEntity {
     @Column(name = "status", nullable = false)
     private CouponMemberStatus status;
 
-    @Column(name = "valide_date", nullable = false)
+    @Column(name = "expire_date", nullable = false)
     private LocalDate expireDate;
 
     public boolean isAuthor(Long memberId) {
