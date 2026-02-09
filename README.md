@@ -11,6 +11,9 @@
 ## 시스템 아키텍처
 ![아키텍처](./img/sysarch.png)
 
+### v2 — 대기열 시스템 포함
+![시스템 아키텍처 v2](./img/system_architecture_v2.svg)
+
 ---
 ## 쿠폰 발급 플로우
 ![시퀸스](./img/coupon_sequence.png)
@@ -107,6 +110,8 @@ return 0
 대기열을 도입하면 사용자를 순서대로 줄 세우고, 서버가 감당할 수 있는 속도(초당 10명)로 처리량을 조절할 수 있다.
 
 ### 아키텍처
+
+![대기열 API 흐름](./img/queue_api_flow.svg)
 
 ```
 [사용자] → POST   /coupons/{id}/queue           (대기열 진입)

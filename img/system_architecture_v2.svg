@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 720" font-family="'Segoe UI', Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#555"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#16a34a"/>
+    </marker>
+    <marker id="arrow-orange" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#ea580c"/>
+    </marker>
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="108%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1100" height="720" fill="#f8fafc" rx="12"/>
+
+  <!-- Title -->
+  <text x="550" y="40" text-anchor="middle" font-size="22" font-weight="bold" fill="#1e293b">System Architecture — Coupon Dispatcher v2</text>
+
+  <!-- ===== Client ===== -->
+  <rect x="40" y="80" width="160" height="80" rx="12" fill="#fff" stroke="#94a3b8" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="120" y="115" text-anchor="middle" font-size="28">👤</text>
+  <text x="120" y="142" text-anchor="middle" font-size="14" font-weight="600" fill="#334155">Client</text>
+
+  <!-- ===== Admin ===== -->
+  <rect x="40" y="520" width="160" height="80" rx="12" fill="#fff" stroke="#94a3b8" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="120" y="555" text-anchor="middle" font-size="28">🔑</text>
+  <text x="120" y="582" text-anchor="middle" font-size="14" font-weight="600" fill="#334155">Admin</text>
+
+  <!-- ===== API Server Box ===== -->
+  <rect x="280" y="70" width="380" height="560" rx="14" fill="#eff6ff" stroke="#3b82f6" stroke-width="2" stroke-dasharray="8 4"/>
+  <text x="470" y="100" text-anchor="middle" font-size="16" font-weight="bold" fill="#1e40af">API Server (Spring Boot)</text>
+
+  <!-- CouponController -->
+  <rect x="310" y="120" width="150" height="55" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="385" y="145" text-anchor="middle" font-size="12" font-weight="600" fill="#1e40af">CouponController</text>
+  <text x="385" y="163" text-anchor="middle" font-size="10" fill="#3b82f6">발급 / 사용 / 조회</text>
+
+  <!-- QueueController -->
+  <rect x="500" y="120" width="140" height="55" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="570" y="145" text-anchor="middle" font-size="12" font-weight="600" fill="#15803d">QueueController</text>
+  <text x="570" y="163" text-anchor="middle" font-size="10" fill="#16a34a">진입 / 순번 / 결과</text>
+
+  <!-- CouponMemberService -->
+  <rect x="310" y="210" width="150" height="50" rx="8" fill="#fff" stroke="#3b82f6" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="385" y="233" text-anchor="middle" font-size="11" font-weight="600" fill="#1e40af">CouponMemberService</text>
+  <text x="385" y="249" text-anchor="middle" font-size="10" fill="#64748b">issueCoupon()</text>
+
+  <!-- QueueRedisService -->
+  <rect x="500" y="210" width="140" height="50" rx="8" fill="#fff" stroke="#16a34a" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="570" y="233" text-anchor="middle" font-size="11" font-weight="600" fill="#15803d">QueueRedisService</text>
+  <text x="570" y="249" text-anchor="middle" font-size="10" fill="#64748b">Lua Script</text>
+
+  <!-- RedisService -->
+  <rect x="310" y="300" width="150" height="50" rx="8" fill="#fff" stroke="#3b82f6" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="385" y="323" text-anchor="middle" font-size="11" font-weight="600" fill="#1e40af">RedisService</text>
+  <text x="385" y="339" text-anchor="middle" font-size="10" fill="#64748b">Cache / Lua / Lock</text>
+
+  <!-- QueueProcessingService (Scheduler) -->
+  <rect x="400" y="400" width="230" height="60" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="515" y="423" text-anchor="middle" font-size="12" font-weight="600" fill="#92400e">QueueProcessingService</text>
+  <text x="515" y="443" text-anchor="middle" font-size="10" fill="#b45309">⏱ Scheduler — 1초/10명 배치</text>
+
+  <!-- TransactionSync -->
+  <rect x="310" y="500" width="150" height="45" rx="8" fill="#fce7f3" stroke="#db2777" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="385" y="520" text-anchor="middle" font-size="10" font-weight="600" fill="#9d174d">TransactionSync</text>
+  <text x="385" y="536" text-anchor="middle" font-size="9" fill="#be185d">DB 롤백 → Redis 보상</text>
+
+  <!-- EventPublisher -->
+  <rect x="310" y="570" width="150" height="40" rx="8" fill="#fff" stroke="#3b82f6" stroke-width="1.2" filter="url(#shadow)"/>
+  <text x="385" y="595" text-anchor="middle" font-size="10" font-weight="600" fill="#1e40af">EventPublisher</text>
+
+  <!-- ===== Redis ===== -->
+  <rect x="750" y="100" width="300" height="290" rx="14" fill="#fef2f2" stroke="#ef4444" stroke-width="2" filter="url(#shadow)"/>
+  <text x="900" y="130" text-anchor="middle" font-size="16" font-weight="bold" fill="#b91c1c">Redis</text>
+
+  <!-- Redis internals -->
+  <rect x="770" y="145" width="120" height="38" rx="6" fill="#fff" stroke="#ef4444" stroke-width="1"/>
+  <text x="830" y="163" text-anchor="middle" font-size="10" fill="#b91c1c">coupon:*:members</text>
+  <text x="830" y="176" text-anchor="middle" font-size="9" fill="#94a3b8">SET — 발급 회원</text>
+
+  <rect x="910" y="145" width="120" height="38" rx="6" fill="#fff" stroke="#ef4444" stroke-width="1"/>
+  <text x="970" y="163" text-anchor="middle" font-size="10" fill="#b91c1c">coupon:*:counter</text>
+  <text x="970" y="176" text-anchor="middle" font-size="9" fill="#94a3b8">STRING — 발급 수</text>
+
+  <rect x="770" y="195" width="120" height="38" rx="6" fill="#fff" stroke="#ef4444" stroke-width="1"/>
+  <text x="830" y="213" text-anchor="middle" font-size="10" fill="#b91c1c">member:*:coupons</text>
+  <text x="830" y="226" text-anchor="middle" font-size="9" fill="#94a3b8">ZSET — 쿠폰 캐시</text>
+
+  <rect x="910" y="195" width="120" height="38" rx="6" fill="#fff" stroke="#ef4444" stroke-width="1"/>
+  <text x="970" y="213" text-anchor="middle" font-size="10" fill="#b91c1c">coupon:*:type</text>
+  <text x="970" y="226" text-anchor="middle" font-size="9" fill="#94a3b8">STRING — TTL 7d</text>
+
+  <!-- Queue keys -->
+  <rect x="770" y="250" width="120" height="38" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="830" y="268" text-anchor="middle" font-size="10" fill="#15803d">coupon:*:queue</text>
+  <text x="830" y="281" text-anchor="middle" font-size="9" fill="#94a3b8">ZSET — 대기열</text>
+
+  <rect x="910" y="250" width="120" height="38" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="970" y="268" text-anchor="middle" font-size="10" fill="#15803d">queue:result:*</text>
+  <text x="970" y="281" text-anchor="middle" font-size="9" fill="#94a3b8">STRING — TTL 5m</text>
+
+  <rect x="840" y="300" width="120" height="38" rx="6" fill="#dcfce7" stroke="#16a34a" stroke-width="1"/>
+  <text x="900" y="318" text-anchor="middle" font-size="10" fill="#15803d">queue:active:coupons</text>
+  <text x="900" y="331" text-anchor="middle" font-size="9" fill="#94a3b8">SET — 활성 목록</text>
+
+  <!-- Lock key -->
+  <rect x="770" y="350" width="120" height="28" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="830" y="369" text-anchor="middle" font-size="10" fill="#92400e">lock:* — 분산 락</text>
+
+  <!-- ===== MySQL ===== -->
+  <rect x="750" y="440" width="300" height="110" rx="14" fill="#f0fdf4" stroke="#16a34a" stroke-width="2" filter="url(#shadow)"/>
+  <text x="900" y="470" text-anchor="middle" font-size="16" font-weight="bold" fill="#15803d">MySQL</text>
+  <rect x="770" y="482" width="80" height="28" rx="6" fill="#fff" stroke="#16a34a" stroke-width="1"/>
+  <text x="810" y="500" text-anchor="middle" font-size="10" fill="#15803d">Coupon</text>
+  <rect x="860" y="482" width="100" height="28" rx="6" fill="#fff" stroke="#16a34a" stroke-width="1"/>
+  <text x="910" y="500" text-anchor="middle" font-size="10" fill="#15803d">CouponMember</text>
+  <rect x="970" y="482" width="65" height="28" rx="6" fill="#fff" stroke="#16a34a" stroke-width="1"/>
+  <text x="1003" y="500" text-anchor="middle" font-size="10" fill="#15803d">Member</text>
+  <rect x="770" y="518" width="100" height="28" rx="6" fill="#fff" stroke="#16a34a" stroke-width="1"/>
+  <text x="820" y="536" text-anchor="middle" font-size="10" fill="#15803d">CouponHistory</text>
+
+  <!-- ===== Kafka ===== -->
+  <rect x="750" y="590" width="300" height="70" rx="14" fill="#fdf4ff" stroke="#a855f7" stroke-width="2" filter="url(#shadow)"/>
+  <text x="830" y="630" text-anchor="middle" font-size="16" font-weight="bold" fill="#7e22ce">Kafka</text>
+  <text x="960" y="630" text-anchor="middle" font-size="11" fill="#a855f7">Topic: coupon</text>
+
+  <!-- ===== Batch Server ===== -->
+  <rect x="750" y="690" width="300" height="20" rx="8" fill="#f5f3ff" stroke="#a855f7" stroke-width="1.5"/>
+  <text x="900" y="704" text-anchor="middle" font-size="11" font-weight="600" fill="#7e22ce">Batch Server — Consumer</text>
+
+  <!-- ===== Arrows ===== -->
+
+  <!-- Client → CouponController -->
+  <line x1="200" y1="110" x2="305" y2="140" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow-blue)"/>
+  <text x="240" y="108" font-size="9" fill="#3b82f6">POST /coupons</text>
+
+  <!-- Client → QueueController -->
+  <line x1="200" y1="130" x2="495" y2="140" stroke="#16a34a" stroke-width="2" marker-end="url(#arrow-green)"/>
+  <text x="340" y="125" font-size="9" fill="#16a34a">POST /queue, GET /position, GET /result</text>
+
+  <!-- Admin → QueueController -->
+  <line x1="200" y1="550" x2="495" y2="170" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arrow-orange)" stroke-dasharray="6 3"/>
+  <text x="300" y="400" font-size="9" fill="#ea580c" transform="rotate(-55, 300, 400)">POST /activate, /deactivate</text>
+
+  <!-- CouponController → CouponMemberService -->
+  <line x1="385" y1="175" x2="385" y2="205" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+
+  <!-- QueueController → QueueRedisService -->
+  <line x1="570" y1="175" x2="570" y2="205" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+
+  <!-- CouponMemberService → RedisService -->
+  <line x1="385" y1="260" x2="385" y2="295" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+
+  <!-- Scheduler → CouponMemberService -->
+  <line x1="430" y1="400" x2="400" y2="265" stroke="#d97706" stroke-width="1.5" marker-end="url(#arrow-orange)"/>
+  <text x="395" y="380" font-size="9" fill="#d97706">issueCoupon()</text>
+
+  <!-- Scheduler → QueueRedisService -->
+  <line x1="560" y1="400" x2="570" y2="265" stroke="#d97706" stroke-width="1.5" marker-end="url(#arrow-orange)"/>
+  <text x="580" y="370" font-size="9" fill="#d97706">pop / saveResult</text>
+
+  <!-- CouponMemberService → TransactionSync -->
+  <line x1="385" y1="350" x2="385" y2="495" stroke="#db2777" stroke-width="1.2" stroke-dasharray="5 3" marker-end="url(#arrow)"/>
+
+  <!-- CouponMemberService → EventPublisher -->
+  <line x1="370" y1="350" x2="370" y2="565" stroke="#64748b" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+
+  <!-- RedisService → Redis -->
+  <line x1="460" y1="325" x2="745" y2="250" stroke="#ef4444" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- QueueRedisService → Redis -->
+  <line x1="640" y1="235" x2="745" y2="280" stroke="#ef4444" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- CouponMemberService → MySQL -->
+  <line x1="460" y1="240" x2="745" y2="480" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arrow-green)"/>
+
+  <!-- EventPublisher → Kafka -->
+  <line x1="460" y1="590" x2="745" y2="620" stroke="#a855f7" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Kafka → Batch -->
+  <line x1="900" y1="660" x2="900" y2="685" stroke="#a855f7" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Legend -->
+  <rect x="40" y="650" width="200" height="60" rx="8" fill="#fff" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="50" y="668" font-size="10" font-weight="600" fill="#334155">Legend</text>
+  <line x1="50" y1="680" x2="80" y2="680" stroke="#3b82f6" stroke-width="2"/>
+  <text x="85" y="684" font-size="9" fill="#64748b">쿠폰 발급</text>
+  <line x1="130" y1="680" x2="160" y2="680" stroke="#16a34a" stroke-width="2"/>
+  <text x="165" y="684" font-size="9" fill="#64748b">대기열</text>
+  <line x1="50" y1="698" x2="80" y2="698" stroke="#d97706" stroke-width="2"/>
+  <text x="85" y="702" font-size="9" fill="#64748b">스케줄러</text>
+  <line x1="130" y1="698" x2="160" y2="698" stroke="#db2777" stroke-width="2" stroke-dasharray="5 3"/>
+  <text x="165" y="702" font-size="9" fill="#64748b">보상 트랜잭션</text>
+</svg>
