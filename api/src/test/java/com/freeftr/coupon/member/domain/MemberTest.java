@@ -18,7 +18,7 @@ class MemberTest {
 				.build();
 
 		// when
-		boolean result = admin.isAdmin(admin);
+		boolean result = admin.isAdmin();
 
 		// then
 		assertThat(result).isTrue();
@@ -34,7 +34,7 @@ class MemberTest {
 				.build();
 
 		// when
-		boolean result = user.isAdmin(user);
+		boolean result = user.isAdmin();
 
 		// then
 		assertThat(result).isFalse();

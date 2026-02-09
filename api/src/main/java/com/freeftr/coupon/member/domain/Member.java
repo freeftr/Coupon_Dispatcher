@@ -25,8 +25,8 @@ public class Member extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private MemberGrade grade;
 
-    public boolean isAdmin(Member member) {
-        return member.grade.equals(MemberGrade.ADMIN);
+    public boolean isAdmin() {
+        return this.grade.equals(MemberGrade.ADMIN);
     }
 
     @Builder
