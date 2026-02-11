@@ -139,4 +139,5 @@ public class QueueRedisService {
         if (estimatedProcessRate <= 0) return 0;
         return (position / estimatedProcessRate) + 1;
     }
+
 }

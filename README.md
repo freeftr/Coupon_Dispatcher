@@ -16,7 +16,7 @@
 
 ---
 ## 쿠폰 발급 플로우
-![시퀸스](./img/coupon_sequence.png)
+![시퀸스](./img/api_flow.png)
 
 트래픽이 몰리는 시점에 Lost Update 문제가 발생하여 쿠폰이 oversell 될 수 있습니다. 이를 해결하기 위해 다음의 두 가지 방법을 고민했습니다.
 - 락을 이용한 동시성 제어.

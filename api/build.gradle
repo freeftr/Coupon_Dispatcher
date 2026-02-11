@@ -42,6 +42,10 @@ dependencies {
 	// Kafka
 	implementation 'org.springframework.kafka:spring-kafka'
 
+	// ShedLock
+	implementation 'net.javacrumbs.shedlock:shedlock-spring:6.3.1'
+	implementation 'net.javacrumbs.shedlock:shedlock-provider-redis-spring:6.3.1'
+
 	// Querydsl dependencies
 	implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
 	annotationProcessor 'com.querydsl:querydsl-apt:5.0.0:jakarta'

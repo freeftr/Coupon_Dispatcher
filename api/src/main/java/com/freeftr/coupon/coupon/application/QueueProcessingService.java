@@ -5,6 +5,7 @@ import com.freeftr.coupon.common.exception.ErrorCode;
 import com.freeftr.coupon.coupon.domain.enums.QueueStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,6 +26,7 @@ public class QueueProcessingService {
     private int batchSize;
 
     @Scheduled(fixedDelayString = "${app.queue.process-interval-ms}")
+    @SchedulerLock(name = "processQueues", lockAtLeastFor = "500ms", lockAtMostFor = "5s")
     public void processQueues() {
         Set<String> activeCouponIds = queueRedisService.getActiveCouponIds();
 

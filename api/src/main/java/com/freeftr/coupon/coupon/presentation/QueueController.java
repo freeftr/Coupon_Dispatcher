@@ -50,6 +50,14 @@ public class QueueController {
         Long position = queueRedisService.getPosition(couponId, memberId);
 
         if (position == null) {
+            String resultValue = queueRedisService.getResult(couponId, memberId);
+            if (resultValue != null) {
+                String[] parts = resultValue.split(":", 2);
+                QueueStatus status = QueueStatus.valueOf(parts[0]);
+                String message = parts.length > 1 ? parts[1] : "";
+                return ResponseEntity.ok(new QueuePositionResponse(
+                        null, null, new QueueResultResponse(status, message)));
+            }
             throw new BadRequestException(ErrorCode.QUEUE_NOT_FOUND);
         }
 

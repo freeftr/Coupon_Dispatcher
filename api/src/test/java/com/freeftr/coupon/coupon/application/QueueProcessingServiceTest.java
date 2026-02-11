@@ -102,4 +102,5 @@ class QueueProcessingServiceTest {
 
         verifyNoInteractions(couponMemberService);
     }
+
 }

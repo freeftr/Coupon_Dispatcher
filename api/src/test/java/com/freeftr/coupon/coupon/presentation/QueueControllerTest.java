@@ -83,13 +83,42 @@ class QueueControllerTest {
     }
 
     @Test
-    @DisplayName("대기열에 없는 사용자의 순번 조회 시 에러를 반환한다.")
+    @DisplayName("대기열에 없고 결과도 없는 사용자의 순번 조회 시 에러를 반환한다.")
     void get_position_not_found() throws Exception {
         given(queueRedisService.getPosition(1L, 2L)).willReturn(null);
+        given(queueRedisService.getResult(1L, 2L)).willReturn(null);
 
         mockMvc.perform(get("/api/v1/coupons/{couponId}/queue/position", 1L)
                         .param("memberId", "2"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("대기열에서 빠졌지만 품절 결과가 있으면 결과를 포함하여 반환한다.")
+    void get_position_returns_sold_out_result() throws Exception {
+        given(queueRedisService.getPosition(1L, 2L)).willReturn(null);
+        given(queueRedisService.getResult(1L, 2L)).willReturn("SOLD_OUT:쿠폰이 품절되었습니다.");
+
+        mockMvc.perform(get("/api/v1/coupons/{couponId}/queue/position", 1L)
+                        .param("memberId", "2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.position").doesNotExist())
+                .andExpect(jsonPath("$.result.status").value("SOLD_OUT"))
+                .andExpect(jsonPath("$.result.message").value("쿠폰이 품절되었습니다."));
+    }
+
+    @Test
+    @DisplayName("대기열에서 빠졌지만 성공 결과가 있으면 결과를 포함하여 반환한다.")
+    void get_position_returns_success_result() throws Exception {
+        given(queueRedisService.getPosition(1L, 2L)).willReturn(null);
+        given(queueRedisService.getResult(1L, 2L)).willReturn("SUCCESS:쿠폰이 발급되었습니다.");
+
+        mockMvc.perform(get("/api/v1/coupons/{couponId}/queue/position", 1L)
+                        .param("memberId", "2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.position").doesNotExist())
+                .andExpect(jsonPath("$.result.status").value("SUCCESS"))
+                .andExpect(jsonPath("$.result.message").value("쿠폰이 발급되었습니다."));
     }
 
     @Test
