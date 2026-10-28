@@ -9,6 +9,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,6 +21,15 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(
+		name = "coupon_history",
+		uniqueConstraints = {
+				@UniqueConstraint(
+						name = "coupon_member_history_type",
+						columnNames = {"coupon_member_id", "history_type"}
+				)
+		}
+)
 public class CouponHistory extends BaseEntity {
 
 	@Id

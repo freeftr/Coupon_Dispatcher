@@ -23,6 +23,7 @@ public class CouponHistoryJdbcRepository {
 				(coupon_member_id, history_type, issued_date, created_at, modified_at)
 				VALUES
 				(?, ?, ?, NOW(), NOW())
+				ON DUPLICATE KEY UPDATE coupon_member_id = coupon_member_id
 				""";
 
 		jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
