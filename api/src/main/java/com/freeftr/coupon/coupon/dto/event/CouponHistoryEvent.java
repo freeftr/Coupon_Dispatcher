@@ -5,6 +5,7 @@ import com.freeftr.coupon.couponhistory.domain.enums.HistoryType;
 import java.time.LocalDateTime;
 
 public record CouponHistoryEvent(
+		Long couponId,
 		Long couponMemberId,
 		HistoryType type,
 		LocalDateTime issuedDate
