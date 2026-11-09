@@ -77,6 +77,7 @@ public class CouponMemberService {
 
         applicationEventPublisher.publishEvent(
                 new CouponHistoryEvent(
+                        couponId,
                         couponMemberId,
                         HistoryType.ISSUED,
                         LocalDateTime.now()
@@ -96,6 +97,7 @@ public class CouponMemberService {
 
         applicationEventPublisher.publishEvent(
                 new CouponHistoryEvent(
+                        couponMember.getCouponId(),
                         couponMemberId,
                         HistoryType.USED,
                         LocalDateTime.now()

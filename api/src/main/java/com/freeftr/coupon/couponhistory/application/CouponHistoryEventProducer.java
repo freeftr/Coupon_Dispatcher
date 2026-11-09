@@ -16,7 +16,7 @@ public class CouponHistoryEventProducer {
 	private String couponTopic;
 
 	public void send(CouponHistoryEvent event) {
-		String key = event.couponMemberId().toString();
+		String key = event.couponId().toString();
 		kafkaTemplate.send(couponTopic, key, event);
 	}
 }
