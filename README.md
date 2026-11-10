@@ -206,3 +206,6 @@ TransactionSynchronizationManager.registerSynchronization(new TransactionSynchro
 
 캐시 키가 만료되는 순간 동시에 수백 요청이 들어오면 전부 캐시 미스가 발생해 동일한 DB 쿼리가 한꺼번에 몰린다(Thundering Herd).
 이를 방지하기 위해 분산 락(`SETNX` + TTL)을 적용하여, 캐시 미스 시 하나의 요청만 DB를 조회하고 나머지는 캐시가 채워질 때까지 대기하도록 했다.
+
+## 부하 테스트
+스파이크 상황에서 직접 발급·대기열·Redis 도입 전 코드의 응답 지연을 잰 결과와 재현 방법은 [loadtest/README.md](./loadtest/README.md)에 있다.
