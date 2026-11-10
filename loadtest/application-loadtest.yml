@@ -1,0 +1,49 @@
+# 부하 테스트 전용 설정. src/main/resources 가 .gitignore 대상이라 여기 둔다.
+# 실행: java -jar api.jar --spring.config.additional-location=file:loadtest/application-loadtest.yml
+# 풀·스레드 크기는 일부러 Spring Boot 기본값(Hikari 10, Tomcat 200)을 그대로 적었다.
+server:
+  port: 18080
+  tomcat:
+    threads:
+      max: 200
+    accept-count: 100
+    max-connections: 8192
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:13306/coupon?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&rewriteBatchedStatements=true
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 30000
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: true
+    show-sql: false
+  data:
+    redis:
+      host: localhost
+      port: 16379
+  kafka:
+    bootstrap-servers: localhost:19092
+    consumer:
+      group-id: coupon-history
+
+app:
+  topics:
+    coupon: coupon-history
+  queue:
+    result-ttl-minutes: 60
+    # 경력기술서 기준 초당 10명: 1초마다 10명씩 꺼내 발급한다
+    estimated-process-rate: 10
+    batch-size: 10
+    process-interval-ms: 1000
+
+logging:
+  level:
+    root: WARN
+    org.springframework.boot.web.embedded.tomcat: INFO
+    com.freeftr: WARN
